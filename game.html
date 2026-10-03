@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Quantum Quest: The Measurement Mystery</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+:root{--c:#22e4ff;--v:#9b7bff;--bg:#050b1a;--p:rgba(8,20,44,.78);--t:#e8f4ff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}html,body{height:100%;margin:0;background:var(--bg);color:var(--t);font:14px/1.45 "Segoe UI",system-ui,sans-serif;overflow:hidden}
+canvas#c{position:fixed;inset:0;width:100%;height:100%;display:block}
+.p{background:var(--p);border:1px solid rgba(34,228,255,.35);border-radius:10px;padding:10px 12px;backdrop-filter:blur(6px);box-shadow:0 0 18px rgba(34,228,255,.12)}
+h3{margin:0 0 6px;font-size:11px;letter-spacing:.18em;color:var(--c);font-weight:600}
+#top{position:fixed;top:8px;left:8px;right:8px;display:flex;gap:10px;align-items:center;justify-content:space-between;padding:6px 12px;z-index:5}
+#top b{letter-spacing:.25em;color:var(--c)}#top span{font-size:12px;opacity:.85}
+#L{position:fixed;left:8px;top:62px;width:240px;z-index:4;max-height:calc(100% - 150px);overflow:auto}
+#R{position:fixed;right:8px;top:62px;width:270px;z-index:4;max-height:calc(100% - 150px);overflow:auto}
+#B{position:fixed;left:50%;transform:translateX(-50%);bottom:8px;width:min(720px,calc(100% - 16px));z-index:4;text-align:center}
+button{background:rgba(34,228,255,.1);color:var(--t);border:1px solid var(--c);border-radius:6px;padding:6px 10px;cursor:pointer;font:inherit;margin:2px}
+button:hover{background:rgba(34,228,255,.3)}button.v{border-color:var(--v)}
+.ob{opacity:.55;margin:3px 0;font-size:13px}.ob.on{opacity:1;color:#fff}.ob.ok{opacity:.9;color:#7dffb0}
+.bar{height:12px;background:#0b1830;border-radius:6px;overflow:hidden;margin:2px 0 6px}.bar i{display:block;height:100%;width:0;transition:width .4s}
+#ch{display:flex;gap:10px;align-items:flex-end;height:70px;margin:6px 0}#ch div{flex:1;background:linear-gradient(var(--c),#1060ff);transition:height .4s;position:relative;min-height:2px;border-radius:4px 4px 0 0}
+#ch span{position:absolute;top:-16px;width:100%;text-align:center;font-size:11px}
+#ov{position:fixed;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle,#0a1d44cc,#02050ff0);text-align:center}
+#ov>div{max-width:560px;padding:20px}#ov h1{letter-spacing:.2em;color:var(--c);margin:0 0 4px;font-size:clamp(22px,5vw,38px);text-shadow:0 0 20px var(--c)}
+#ov button{font-size:16px;padding:10px 26px}
+#pr{position:fixed;left:50%;top:50%;transform:translate(-50%,40px);z-index:6;display:none;color:var(--c)}
+#cr{position:fixed;left:50%;top:50%;width:6px;height:6px;margin:-3px;border:1px solid var(--c);border-radius:50%;z-index:3;pointer-events:none}
+code{color:var(--c)}small{opacity:.75}
+@media(max-width:900px){#L{display:none}#R{width:220px}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style></head><body>
+<canvas id="c"></canvas><div id="cr"></div>
+<div id="top" class="p"><b>QUANTUM QUEST</b><span id="ms">MISSION 01</span><span id="sys">● SYSTEM ONLINE</span><span><button id="bp">Pause</button><button id="bs">Sound: On</button><button id="br" class="v">Restart</button></span></div>
+<div id="L" class="p"><h3>MISSION OBJECTIVES</h3><div id="ob"></div><div class="bar"><i id="pg" style="background:var(--v)"></i></div><small id="sc">Discovery points: 0</small><h3 style="margin-top:10px">DISCOVERIES</h3><div id="dc"><small>Nothing yet…</small></div></div>
+<div id="R" class="p"><h3>QUANTUM STATE</h3><div id="ket" style="font-size:16px">|ψ⟩ = 1|0⟩ + 0|1⟩</div>
+<small>P(0)</small><div class="bar"><i id="b0" style="background:var(--c)"></i></div><small>P(1)</small><div class="bar"><i id="b1" style="background:var(--v)"></i></div>
+<div id="out" style="margin:4px 0">Last measurement: —</div>
+<h3>EXPERIMENT CONTROLS</h3><button data-a="prep">Prepare |0⟩ <small>[R]</small></button><button data-a="h">Hadamard H <small>[H]</small></button><button data-a="m" class="v">Measure <small>[M]</small></button>
+<div>Repeat (prepare H|0⟩ + measure): <button data-a="t20">20 <small>[Z]</small></button><button data-a="t50">50 <small>[X]</small></button><button data-a="t100">100 <small>[C]</small></button></div>
+<div id="ch"><div id="c0" style="height:2px"><span>0</span></div><div id="c1" style="height:2px;background:linear-gradient(var(--v),#4020c0)"><span>1</span></div></div><small id="cs">No trials yet. Expected: 50% / 50%</small><div><button data-a="reset">Reset experiment</button></div></div>
+<div id="pr" class="p">Press <b>E</b> to use console</div>
+<div id="B" class="p"><div id="msg">Click to start.</div><small>WASD move · Mouse look · E console · ESC release mouse · R H M Z X C experiment keys</small></div>
+<div id="ov"><div><h1>QUANTUM QUEST</h1><div style="letter-spacing:.3em;color:var(--v);margin-bottom:14px">THE MEASUREMENT MYSTERY</div><p id="ovt">Welcome, Scientist. A quantum system has been detected. Your task is to investigate its behavior.</p><button id="go">ENTER LABORATORY</button><p><small>Needs WebGL. If your mouse doesn't lock, drag with the mouse to look around.</small></p></div></div>
+<script>
+const $=i=>document.getElementById(i),SQ=Math.SQRT1_2;
+/* ---------- 1. QUANTUM SIMULATOR: |ψ> = α|0> + β|1>, amplitudes are [re, im] ---------- */
+let st={a:[1,0],b:[0,0]};
+const P0=()=>st.a[0]**2+st.a[1]**2, P1=()=>st.b[0]**2+st.b[1]**2;
+function prep(){st={a:[1,0],b:[0,0]}}
+function hadamard(){const{a,b}=st;st={a:[(a[0]+b[0])*SQ,(a[1]+b[1])*SQ],b:[(a[0]-b[0])*SQ,(a[1]-b[1])*SQ]}}
+function measure(){const r=Math.random()<P0()?0:1;st=r?{a:[0,0],b:[1,0]}:{a:[1,0],b:[0,0]};return r} // real sampling + collapse
+function bloch(){const{a,b}=st;return new THREE.Vector3(2*(a[0]*b[0]+a[1]*b[1]),P0()-P1(),2*(a[0]*b[1]-a[1]*b[0]))} // x, z(up), y
+const fz=x=>Math.abs(x)<1e-9?0:x, f2=x=>fz(x).toFixed(2);
+const cx=c=>{const r=fz(c[0]),i=fz(c[1]);return i===0?r.toFixed(2):r===0?i.toFixed(2)+'i':`(${r.toFixed(2)}${i<0?'−':'+'}${Math.abs(i).toFixed(2)}i)`};
+/* ---------- 2. GAME STATE & MISSIONS ---------- */
+const G=[ ['visit','Approach the console and press E'],['sup','Apply H to |0⟩ to make a superposition'],['meas','Measure the qubit once'],['trials','Run a batch of repeated trials'],['hh','Apply H twice: return to |0⟩'] ];
+const INTRO=['Walk to the glowing console in front of the chamber and press E.','Mission 02 · A bit is 0 or 1. A qubit can be a superposition of |0⟩ and |1⟩: a state with amplitudes for both. Prepare |0⟩, then apply H.','Mission 03 · Measure it. You get one definite outcome (0 or 1), and the state becomes that outcome.','Mission 04 · Run many trials. One result is unpredictable, but the counts reveal the probabilities.','Mission 05 · H on |0⟩ makes an equal superposition. H again interferes the amplitudes back to |0⟩ (ideal).'];
+let F={},score=0,disc=[],counts=[0,0],hist=[],done=false;
+try{const s=JSON.parse(localStorage.getItem('qq')||'{}');F=s.F||{};score=s.score||0;disc=s.disc||[]}catch(e){}
+const save=()=>{try{localStorage.setItem('qq',JSON.stringify({F,score,disc}))}catch(e){}};
+const cur=()=>{const i=G.findIndex(g=>!F[g[0]]);return i<0?G.length:i};
+function say(t){$('msg').innerHTML=t}
+function ui(){const i=cur();$('ob').innerHTML=G.map((g,k)=>`<div class="ob ${F[g[0]]?'ok':k===i?'on':''}">${F[g[0]]?'✔':k===i?'▶':'○'} ${g[1]}</div>`).join('');
+ $('pg').style.width=(i/G.length*100)+'%';$('ms').textContent='MISSION 0'+Math.min(i+1,5);$('sc').textContent='Discovery points: '+score;
+ $('dc').innerHTML=disc.length?disc.map(d=>`<div style="font-size:12px">◆ ${d}</div>`).join(''):'<small>Nothing yet…</small>';
+ const p0=P0()*100,p1=P1()*100;$('b0').style.width=p0+'%';$('b1').style.width=p1+'%';
+ $('ket').innerHTML=`|ψ⟩ = ${cx(st.a)}|0⟩ + ${cx(st.b)}|1⟩<br><small>P(0)=${p0.toFixed(0)}%  P(1)=${p1.toFixed(0)}%</small>`;
+ const n=counts[0]+counts[1];if(n){const m=Math.max(counts[0],counts[1]);$('c0').style.height=(counts[0]/m*60+2)+'px';$('c1').style.height=(counts[1]/m*60+2)+'px';
+  $('c0').firstChild.textContent='0: '+counts[0];$('c1').firstChild.textContent='1: '+counts[1];
+  $('cs').textContent=`Experimental: ${(counts[0]/n*100).toFixed(0)}% / ${(counts[1]/n*100).toFixed(0)}%  ·  Expected: 50% / 50%  (n=${n})`}
+ if(i===G.length&&!done){done=true;setTimeout(()=>{unlock();$('ovt').innerHTML='<b>Mission complete!</b><br>You learned superposition, measurement, probability, repeated experiments and the Hadamard gate. Score: '+score+'<br><br>Honest note: this is a simplified single-qubit model; how measurement works physically is still debated in quantum foundations.';$('go').textContent='PLAY AGAIN';$('ov').style.display='flex';$('go').onclick=()=>{restart();begin()};snd(520,.6,'sine',.1,1040)},1500)}}
+function win(k,pts,d){if(!F[k]){F[k]=1;score+=pts;if(d)disc.push(d);snd(660,.3,'triangle',.1,990);save()}}
+/* ---------- 3. ACTIONS ---------- */
+let flash=0,lastPrev=0;
+function act(a){if(!ac)audio();snd(440,.08,'square',.04);
+ if(a==='prep'){prep();say('Prepared |0⟩: a definite state. P(0)=100%.')}
+ else if(a==='h'){lastPrev=P0();hadamard();snd(300,.4,'sine',.08,700);
+  if(Math.abs(P0()-.5)<1e-6&&Math.abs(lastPrev-1)<1e-6){win('sup',100,'Superposition: H|0⟩ gives equal amplitudes for 0 and 1');say('Superposition! Amplitudes α=β=0.71, so P(0)=P(1)=50%. This is <b>not</b> a hidden 0-or-1; it is a single quantum state with amplitudes for both.')}
+  else if(Math.abs(lastPrev-.5)<1e-6&&P0()>.999999){win('hh',150,'Interference: H·H|0⟩ = |0⟩');say('Applying H twice returned the state to |0⟩. The |1⟩ amplitudes cancelled (interference).')}
+  else say('H applied. Watch the Bloch vector rotate.')}
+ else if(a==='m'){const r=measure();flash=1;out(r);snd(200,.5,'sawtooth',.06,900);
+  say(`Outcome <b>${r}</b>. The state is now |${r}⟩. One run can't prove 50/50: it was random. Measure again after H to see it vary.`);
+  if(Math.abs(lastPrev-1)<1e-6||true){if(!F.meas&&cur()>=2)win('meas',100,'Measurement gives one outcome and collapses the state');else if(!F.meas&&F.sup)win('meas',100,'Measurement gives one outcome and collapses the state')}}
+ else if(a[0]==='t'){const n=+a.slice(1);let c=[0,0];for(let i=0;i<n;i++){prep();hadamard();c[measure()]++}counts=[counts[0]+c[0],counts[1]+c[1]];flash=1;
+  say(`${n} runs: ${c[0]} zeros, ${c[1]} ones. Individual results vary, but the totals approach 50/50 as runs grow (law of large numbers).`);
+  win('trials',150,'Repeated experiments reveal the probability distribution');snd(500,.4,'triangle',.08,800)}
+ else if(a==='reset'){prep();counts=[0,0];$('out').textContent='Last measurement: —';$('c0').firstChild.textContent='0';$('c1').firstChild.textContent='1';$('c0').style.height=$('c1').style.height='2px';$('cs').textContent='No trials yet. Expected: 50% / 50%';say('Experiment reset to |0⟩.')}
+ if(F.visit)ui();else{say('Walk up to the console first (press E near it).');ui()}}
+function out(r){hist.unshift(r);hist=hist.slice(0,12);$('out').innerHTML=`Last measurement: <b style="color:var(--c);font-size:18px">${r}</b><br><small>History: ${hist.join(' ')}</small>`}
+document.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>act(b.dataset.a));
+function restart(){F={};score=0;disc=[];counts=[0,0];hist=[];done=false;prep();save();$('out').textContent='Last measurement: —';act('reset');say(INTRO[0]);ui()}
+$('br').onclick=restart;
+/* ---------- 4. AUDIO (Web Audio, starts after click) ---------- */
+let ac,amb,mute=false;
+function audio(){ac=new(window.AudioContext||window.webkitAudioContext)();const o=ac.createOscillator(),g=ac.createGain();o.frequency.value=55;o.type='sine';g.gain.value=.03;o.connect(g).connect(ac.destination);o.start();amb=g}
+function snd(f,d=.15,t='sine',v=.08,f2){if(!ac||mute)return;const o=ac.createOscillator(),g=ac.createGain(),n=ac.currentTime;o.type=t;o.frequency.setValueAtTime(f,n);if(f2)o.frequency.exponentialRampToValueAtTime(f2,n+d);g.gain.setValueAtTime(v,n);g.gain.exponentialRampToValueAtTime(1e-4,n+d);o.connect(g).connect(ac.destination);o.start();o.stop(n+d)}
+$('bs').onclick=()=>{mute=!mute;if(amb)amb.gain.value=mute?0:.03;$('bs').textContent='Sound: '+(mute?'Off':'On')};
+/* ---------- 5. 3D SCENE ---------- */
+let R,S,cam,yaw=0,pitch=0,keys={},locked=false,started=false,near=false,drag=false;
+try{R=new THREE.WebGLRenderer({canvas:$('c'),antialias:true});}catch(e){$('ovt').innerHTML='WebGL is not available in this browser. Try Chrome or Edge with hardware acceleration on.';$('go').style.display='none'}
+if(R){
+R.setPixelRatio(Math.min(devicePixelRatio,1.5));R.outputEncoding=THREE.sRGBEncoding;
+S=new THREE.Scene();S.background=new THREE.Color(0x030914);S.fog=new THREE.FogExp2(0x030914,.035);
+cam=new THREE.PerspectiveCamera(70,1,.1,100);cam.position.set(0,1.7,6);cam.rotation.order='YXZ';
+const M=(c,o={})=>new THREE.MeshStandardMaterial(Object.assign({color:c,metalness:.85,roughness:.35},o));
+const add=(m,x,y,z,p=S)=>{m.position.set(x,y,z);p.add(m);return m};
+S.add(new THREE.AmbientLight(0x4466aa,.45));
+const key=add(new THREE.PointLight(0x22e4ff,1.2,22),0,4.5,0);const fill=add(new THREE.PointLight(0x9b7bff,.8,16),0,1.5,-5);
+// floor, grid, ceiling, walls
+const fl=add(new THREE.Mesh(new THREE.PlaneGeometry(16,16),M(0x0a1424,{metalness:.9,roughness:.25})),0,0,0);fl.rotation.x=-Math.PI/2;
+add(new THREE.GridHelper(16,32,0x22e4ff,0x0d3a55),0,.01,0);
+const ce=add(new THREE.Mesh(new THREE.PlaneGeometry(16,16),M(0x0b1220)),0,5,0);ce.rotation.x=Math.PI/2;
+[[0,2.5,-8,0],[0,2.5,8,Math.PI],[-8,2.5,0,Math.PI/2],[8,2.5,0,-Math.PI/2]].forEach(w=>{const m=add(new THREE.Mesh(new THREE.PlaneGeometry(16,5),M(0x0c1a2e,{roughness:.5})),w[0],w[1],w[2]);m.rotation.y=w[3];
+ for(let i=-3;i<=3;i+=2){const s=new THREE.Mesh(new THREE.BoxGeometry(.08,4.2,.05),new THREE.MeshBasicMaterial({color:0x1b86b0}));s.position.set(i*2,0,.03);m.add(s)}});
+// ceiling light panels
+for(let x=-4;x<=4;x+=4)for(let z=-4;z<=4;z+=4)add(new THREE.Mesh(new THREE.BoxGeometry(2,.05,1),new THREE.MeshBasicMaterial({color:0xcfefff})),x,4.97,z);
+// containment chamber
+const CH=new THREE.Group();CH.position.set(0,0,0);S.add(CH);
+add(new THREE.Mesh(new THREE.CylinderGeometry(1.6,1.8,.4,40),M(0x111a28)),0,.2,0,CH);
+add(new THREE.Mesh(new THREE.CylinderGeometry(1.5,1.5,3.2,40,1,true),new THREE.MeshPhysicalMaterial({color:0x66ccff,transparent:true,opacity:.14,roughness:0,metalness:0,side:THREE.DoubleSide,depthWrite:false})),0,2,0,CH);
+[.45,3.55].forEach(y=>{const r=add(new THREE.Mesh(new THREE.TorusGeometry(1.5,.08,12,48),new THREE.MeshStandardMaterial({color:0x22e4ff,emissive:0x22e4ff,emissiveIntensity:1.4})),0,y,0,CH);r.rotation.x=Math.PI/2});
+add(new THREE.Mesh(new THREE.CylinderGeometry(1.7,1.5,.3,40),M(0x111a28)),0,3.75,0,CH);
+// Bloch sphere (wire) + axes + labels
+const BS=new THREE.Group();BS.position.set(0,2,0);CH.add(BS);
+BS.add(new THREE.Mesh(new THREE.SphereGeometry(.9,24,16),new THREE.MeshBasicMaterial({color:0x2288ff,wireframe:true,transparent:true,opacity:.25})));
+const eq=new THREE.Mesh(new THREE.TorusGeometry(.9,.008,6,64),new THREE.MeshBasicMaterial({color:0x9b7bff}));eq.rotation.x=Math.PI/2;BS.add(eq);
+BS.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,-1.05,0),new THREE.Vector3(0,1.05,0)]),new THREE.LineBasicMaterial({color:0x667788})));
+function glowTex(c){const k=document.createElement('canvas');k.width=k.height=64;const x=k.getContext('2d'),g=x.createRadialGradient(32,32,0,32,32,32);g.addColorStop(0,c);g.addColorStop(.3,c.replace('1)','.35)'));g.addColorStop(1,'rgba(0,0,0,0)');x.fillStyle=g;x.fillRect(0,0,64,64);return new THREE.CanvasTexture(k)}
+function label(t,y){const k=document.createElement('canvas');k.width=128;k.height=64;const x=k.getContext('2d');x.fillStyle='#fff';x.font='bold 40px sans-serif';x.textAlign='center';x.fillText(t,64,46);const s=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(k),transparent:true,depthTest:false}));s.scale.set(.5,.25,1);s.position.set(0,y,0);BS.add(s)}
+label('|0⟩',1.2);label('|1⟩',-1.2);
+const arrow=new THREE.Mesh(new THREE.CylinderGeometry(.015,.015,.9,8),new THREE.MeshBasicMaterial({color:0x22e4ff}));arrow.geometry.translate(0,.45,0);BS.add(arrow);
+const core=new THREE.Mesh(new THREE.SphereGeometry(.1,20,20),new THREE.MeshStandardMaterial({color:0xffffff,emissive:0x22e4ff,emissiveIntensity:2}));BS.add(core);
+const glow=new THREE.Sprite(new THREE.SpriteMaterial({map:glowTex('rgba(80,230,255,1)'),blending:THREE.AdditiveBlending,transparent:true,depthWrite:false}));glow.scale.set(.9,.9,1);core.add(glow);
+const ring=new THREE.Mesh(new THREE.RingGeometry(.9,.95,48),new THREE.MeshBasicMaterial({color:0x9b7bff,transparent:true,opacity:0,side:THREE.DoubleSide}));CH.add(ring);ring.position.y=2;
+// console (interactive)
+const CON=new THREE.Group();CON.position.set(0,0,3.6);S.add(CON);
+add(new THREE.Mesh(new THREE.BoxGeometry(1.8,.9,.7),M(0x101a2a)),0,.45,0,CON);
+const scr=add(new THREE.Mesh(new THREE.PlaneGeometry(1.6,.5),new THREE.MeshBasicMaterial({color:0x22e4ff})),0,1.05,.05,CON);scr.rotation.x=-.5;
+const holo=add(new THREE.Mesh(new THREE.TorusGeometry(.35,.015,8,40),new THREE.MeshBasicMaterial({color:0x22e4ff,transparent:true,opacity:.7})),0,1.6,0,CON);
+const cl=add(new THREE.PointLight(0x22e4ff,.7,5),0,1.5,.5,CON);
+// wall monitors with live canvas (probabilities)
+const mons=[];function monitor(x,y,z,ry){const k=document.createElement('canvas');k.width=256;k.height=128;const t=new THREE.CanvasTexture(k);const m=add(new THREE.Mesh(new THREE.PlaneGeometry(3,1.5),new THREE.MeshBasicMaterial({map:t})),x,y,z);m.rotation.y=ry;mons.push({k,t});}
+monitor(-4,2.4,-7.9,0);monitor(4,2.4,-7.9,0);monitor(-7.9,2.4,0,Math.PI/2);monitor(7.9,2.4,0,-Math.PI/2);
+function drawMon(){const q=P0();mons.forEach((m,i)=>{const x=m.k.getContext('2d');x.fillStyle='#04101f';x.fillRect(0,0,256,128);x.strokeStyle='#22e4ff';x.strokeRect(2,2,252,124);x.fillStyle='#22e4ff';x.font='12px monospace';x.fillText(['QUBIT MONITOR','PROBABILITIES','BLOCH Z-AXIS','SYSTEM STATUS'][i],10,18);
+ x.fillStyle='#22e4ff';x.fillRect(20,50,q*200,18);x.fillStyle='#9b7bff';x.fillRect(20,80,(1-q)*200,18);x.fillStyle='#fff';x.fillText('P0 '+(q*100).toFixed(0)+'%',20,44);x.fillText('P1 '+((1-q)*100).toFixed(0)+'%',20,114);m.t.needsUpdate=true})}
+// floating particles
+const N=300,pp=new Float32Array(N*3);for(let i=0;i<N;i++){pp[i*3]=(Math.random()-.5)*15;pp[i*3+1]=Math.random()*4.8;pp[i*3+2]=(Math.random()-.5)*15}
+const pg=new THREE.BufferGeometry();pg.setAttribute('position',new THREE.BufferAttribute(pp,3));
+const dust=new THREE.Points(pg,new THREE.PointsMaterial({color:0x66ddff,size:.05,transparent:true,opacity:.6,depthWrite:false}));S.add(dust);
+/* ---------- 6. PLAYER (pointer lock, WASD, collisions) ---------- */
+const cv=$('c');
+function lock(){try{const p=cv.requestPointerLock&&cv.requestPointerLock();if(p&&p.catch)p.catch(()=>{})}catch(e){}}
+function unlock(){if(document.exitPointerLock)document.exitPointerLock()}
+document.addEventListener('pointerlockchange',()=>{locked=document.pointerLockElement===cv;$('bp').textContent=locked?'Pause':'Resume';$('sys').textContent=locked?'● SYSTEM ONLINE':'❚❚ PAUSED'});
+document.addEventListener('mousemove',e=>{if(locked||(drag&&started)){const k=locked?.0022:.004;yaw-=e.movementX*k;pitch=Math.max(-1.4,Math.min(1.4,pitch-e.movementY*k))}});
+cv.addEventListener('mousedown',()=>{drag=true;if(started&&!locked)lock()});addEventListener('mouseup',()=>drag=false);
+$('bp').onclick=()=>locked?unlock():lock();
+addEventListener('keydown',e=>{const k=e.key.toLowerCase();keys[k]=1;if(!started)return;
+ if(k==='e'&&near){if(!F.visit){win('visit',50,'Found the quantum console');say(INTRO[1]);ui()}else say('Console active. Use the right panel or keys R / H / M / Z / X / C.');snd(700,.2,'triangle',.08)}
+ const map={r:'prep',h:'h',m:'m',z:'t20',x:'t50',c:'t100'};if(map[k]&&!e.repeat)act(map[k])});
+addEventListener('keyup',e=>keys[e.key.toLowerCase()]=0);
+function resize(){R.setSize(innerWidth,innerHeight,false);cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix()}addEventListener('resize',resize);resize();
+const rm=matchMedia('(prefers-reduced-motion:reduce)').matches;
+const clock=new THREE.Clock();let tm=0,acc=0,tgt=new THREE.Vector3(0,1,0),cv3=new THREE.Vector3(0,1,0);
+const UP=new THREE.Vector3(0,1,0);
+function loop(){requestAnimationFrame(loop);const dt=Math.min(clock.getDelta(),.05);tm+=dt;
+ if(started){const sp=(keys.shift?5:3)*dt,f=(keys.w?1:0)-(keys.s?1:0),r=(keys.d?1:0)-(keys.a?1:0);
+  const px=cam.position.x,pz=cam.position.z;
+  cam.position.x+=(-Math.sin(yaw)*f+Math.cos(yaw)*r)*sp;cam.position.z+=(-Math.cos(yaw)*f-Math.sin(yaw)*r)*sp;
+  cam.position.x=Math.max(-7.4,Math.min(7.4,cam.position.x));cam.position.z=Math.max(-7.4,Math.min(7.4,cam.position.z));
+  const d=Math.hypot(cam.position.x,cam.position.z);if(d<2.1){cam.position.x=cam.position.x/d*2.1;cam.position.z=cam.position.z/d*2.1} // chamber collision
+  if(Math.abs(cam.position.x)<1.2&&Math.abs(cam.position.z-3.6)<.8){cam.position.x=px;cam.position.z=pz} // console collision
+  const dx=cam.position.x,dz=cam.position.z-3.6;near=Math.hypot(dx,dz)<2.6;$('pr').style.display=near&&locked?'block':'none'}
+ cam.rotation.set(pitch,yaw,0);
+ tgt.copy(bloch());cv3.lerp(tgt,Math.min(1,dt*5));const L=cv3.length();const dir=L>.01?cv3.clone().normalize():UP;
+ arrow.quaternion.setFromUnitVectors(UP,dir);arrow.scale.y=Math.max(.05,L);core.position.copy(dir).multiplyScalar(.9*Math.max(L,.05)>.9?.9:.9*L);
+ const jit=rm?0:Math.sin(tm*9)*.02*(1-Math.abs(tgt.y));core.position.x+=jit;
+ flash=Math.max(0,flash-dt*1.5);core.scale.setScalar(1+flash*1.6+(rm?0:Math.sin(tm*3)*.1));ring.material.opacity=flash*.8;ring.scale.setScalar(1+(1-flash)*1.2);ring.rotation.x=Math.PI/2;
+ if(!rm){holo.rotation.y+=dt;holo.rotation.x=Math.sin(tm)*.4;BS.rotation.y+=dt*.15;dust.rotation.y+=dt*.01;dust.position.y=Math.sin(tm*.5)*.1}
+ holo.material.opacity=near?1:.5;cl.intensity=near?1.6:.7;
+ acc+=dt;if(acc>.3){acc=0;drawMon();ui2()}
+ R.render(S,cam)}
+let lastKey='';function ui2(){}
+loop();
+$('go').onclick=begin;
+}
+function begin(){if(!R)return;$('ov').style.display='none';started=true;if(!ac)audio();lock();say(F.visit?INTRO[Math.min(cur(),4)]:INTRO[0]);ui()}
+ui();
+</script></body></html>

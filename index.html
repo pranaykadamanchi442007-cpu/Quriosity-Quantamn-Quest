@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quantum Quest · Judges</title>
+<style>
+:root{--bg:#050b1a;--p:#0a1a36;--c:#22e4ff;--v:#9b7bff;--t:#e8f4ff}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(circle at 50% 0,#0d2a55,var(--bg) 60%);color:var(--t);font:16px/1.6 "Segoe UI",system-ui,sans-serif;min-height:100vh}
+main{max-width:860px;margin:0 auto;padding:40px 18px}
+h1{letter-spacing:.18em;color:var(--c);font-size:clamp(26px,6vw,44px);margin:0;text-shadow:0 0 20px var(--c)}
+.sub{color:var(--v);letter-spacing:.3em;font-size:13px;margin:4px 0 22px}
+.card{background:var(--p);border:1px solid rgba(34,228,255,.3);border-radius:12px;padding:18px;margin:16px 0}
+h2{font-size:12px;letter-spacing:.2em;color:var(--c);margin:0 0 8px}
+.btn{display:inline-block;background:var(--c);color:#04101c;font-weight:700;text-decoration:none;padding:12px 26px;border-radius:8px;font-size:18px}
+.btn:hover{filter:brightness(1.15)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.grid div{border:1px solid rgba(155,123,255,.5);border-radius:8px;padding:10px;font-size:14px}
+.grid b{color:var(--v);display:block}
+kbd{background:#12305a;border:1px solid var(--c);border-radius:4px;padding:1px 6px;font-size:13px}
+small{opacity:.75}
+</style></head><body><main>
+<h1>QUANTUM QUEST</h1>
+<div class="sub">THE MEASUREMENT MYSTERY</div>
+<p>A 3D first-person game that teaches quantum physics by letting players run real experiments on a qubit. By [Team Name], [Hackathon Name].</p>
+
+<div class="card"><h2>PLAY THE PROJECT</h2>
+<!-- Replace the link below if you host the game somewhere else -->
+<a class="btn" id="play" href="game.html" target="_blank" rel="noopener">▶️ Launch the game</a>
+<p><small>Runs in Chrome or Edge, no install or login. Needs an internet connection.</small></p></div>
+
+<div class="card"><h2>30-SECOND GUIDE</h2>
+<p>Click <b>Enter Laboratory</b>, walk with <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd>, look with the mouse, and press <kbd>E</kbd> at the glowing console. Then try <kbd>R</kbd> prepare · <kbd>H</kbd> Hadamard · <kbd>M</kbd> measure · <kbd>Z</kbd>/<kbd>X</kbd>/<kbd>C</kbd> run 20/50/100 trials. <kbd>Esc</kbd> frees the mouse for clicking buttons.</p></div>
+
+<div class="card"><h2>WHAT YOU WILL SEE</h2><div class="grid">
+<div><b>1 · Superposition</b>A qubit with amplitudes for 0 and 1</div>
+<div><b>2 · Measurement</b>One random outcome, state collapses</div>
+<div><b>3 · Probability</b>Live meters for P(0) and P(1)</div>
+<div><b>4 · Repeated trials</b>Chart of experiment vs expected</div>
+<div><b>5 · Hadamard gate</b>H once = superposition, twice = back to 0</div></div></div>
+
+<div class="card"><h2>WHY IT IS ACCURATE</h2>
+<p>It runs a real single-qubit simulator with complex amplitudes, P(0)=|α|² and P(1)=|β|², true random sampling and state collapse. It does not claim that one measurement proves a distribution, and it does not present any interpretation of quantum mechanics as settled.</p></div>
+
+<div class="card"><h2>BUILT WITH</h2><p>HTML, CSS, JavaScript, Three.js (WebGL) and the Web Audio API. No backend, no API keys.</p></div>
+
+<p><small>Team: [Names] · Contact: [Email]</small></p>
+</main></body></html>
